@@ -50,11 +50,33 @@ data Hyper :: [* -> *] -> * -> * where
     Prism  :: (Dim f, Shapely fs) => 
                 Hyper fs (f a) -> Hyper (f ': fs) a
 
--- TODO: instances of Applicative, Naperian, Foldable, and Traversable...
+-- TODO: instances of Functor, Applicative, Naperian, Foldable, and Traversable...
+instance Functor (Hyper fs) where
+    fmap f (Scalar a) = Scalar $ f a
+    fmap f (Prism p)  = Prism $ fmap (fmap f) p
 
--- TODO: make `unary` compile
---unary :: Shapely fs => (a -> b) -> (Hyper fs a -> Hyper fs b)
---unary = fmap
+instance Applicative (Hyper fs) where
+    pure a = undefined -- `Scalar a` gives:
+{-
+            Couldn't match type ‘fs’ with ‘'[]’
+                  ‘fs’ is a rigid type variable bound by
+                       the instance declaration
+            Expected type: Hyper fs a
+              Actual type: Hyper '[] a
+-}
+    (<*>)  = undefined
+
+{-
+instance Naperian (Hyper fs)
+
+instance Foldable (Hyper fs)
+
+instance Traversable (Hyper fs)
+
+-- TODO: uncomment when all instances are here
+unary :: Shapely fs => (a -> b) -> (Hyper fs a -> Hyper fs b)
+unary = fmap
+-}
 
 -------------------------------------
 --            Aligning shapes
