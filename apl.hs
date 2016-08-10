@@ -16,10 +16,14 @@ data Vector :: Nat -> * -> * where
     VCons :: a -> Vector n a -> Vector (S n) a
 
 vmap :: (a -> b) -> Vector n a -> Vector n b
-vmap = undefined -- TODO: add definition
+vmap _ VNil        = VNil
+vmap f (VCons a v) = VCons (f a) (vmap f v)
 
 vzipWith :: (a -> b -> c) -> Vector n a -> Vector n b -> Vector n c
-vzipWith = undefined -- TODO: add definition
+vzipWith _ VNil _    = VNil
+vzipWith _ _    VNil = VNil
+vzipWith f (VCons a va) (VCons b vb) = 
+    VCons (f a b) (vzipWith f va vb)
 
 ----------------------------------------------
 --            Classes: Naperian, Dim, Shapely
