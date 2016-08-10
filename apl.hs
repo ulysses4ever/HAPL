@@ -36,11 +36,11 @@ class Applicative f => Naperian f where
 transpose :: (Naperian f, Naperian g) => f (g a) -> g (f a)
 transpose = table . fmap table . flip . fmap lookup . lookup
 
-class(Naperian f, Traversable f) => Dim f
+class (Naperian f, Traversable f) => Dim f
 
-class Shapely (fs :: [* -> *]) -- where::
-instance Shapely '[] -- where::
-instance (Dim f, Shapely fs) => Shapely (f ': fs) -- where:::
+class Shapely (fs :: [* -> *])
+instance Shapely '[]
+instance (Dim f, Shapely fs) => Shapely (f ': fs)
 
 -------------------------------------
 --            Hypercuboid datatype
