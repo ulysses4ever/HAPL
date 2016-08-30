@@ -1,4 +1,6 @@
-{-# LANGUAGE KindSignatures, GADTs, TypeFamilies, TypeOperators, MultiParamTypeClasses #-}
+{-# LANGUAGE KindSignatures, GADTs, TypeFamilies, TypeOperators, MultiParamTypeClasses, FlexibleInstances, FlexibleContexts, DataKinds, InstanceSigs #-}
+
+module HApl where
 
 import Prelude hiding (lookup)
 import Control.Applicative (liftA2)
@@ -55,16 +57,17 @@ instance Functor (Hyper fs) where
     fmap f (Scalar a) = Scalar $ f a
     fmap f (Prism p)  = Prism $ fmap (fmap f) p
 
-instance Applicative (Hyper fs) where
-    pure a = undefined -- `Scalar a` gives:
-{-
-            Couldn't match type ‘fs’ with ‘'[]’
-                  ‘fs’ is a rigid type variable bound by
-                       the instance declaration
-            Expected type: Hyper fs a
-              Actual type: Hyper '[] a
--}
-    (<*>)  = undefined
+instance Applicative (Hyper '[]) where
+    pure a = Scalar a
+    (Scalar f) <*> (Scalar a) = Scalar $ f a
+
+instance (Dim f, Shapely fs, Applicative (Hyper fs)) => 
+         Applicative (Hyper (f ': fs)) where
+    pure :: a -> Hyper (f ': fs) a
+    pure a = Prism . pure $ pure a
+    
+    (<*>) :: Hyper (f ': fs) (a -> b) -> Hyper (f ': fs) a -> Hyper (f ': fs) b
+    (Prism hf) <*> (Prism ha) = Prism $ liftA2 (<*>) hf ha
 
 {-
 instance Naperian (Hyper fs)
