@@ -69,6 +69,15 @@ instance (Dim f, Shapely fs, Applicative (Hyper fs)) =>
     (<*>) :: Hyper (f ': fs) (a -> b) -> Hyper (f ': fs) a -> Hyper (f ': fs) b
     (Prism hf) <*> (Prism ha) = Prism $ liftA2 (<*>) hf ha
 
+instance Foldable (Hyper fs) where
+    foldMap f (Scalar a) = f a
+    foldMap f (Prism p)  = foldMap (foldMap f) p
+
+instance Traversable (Hyper fs) where
+    traverse :: Applicative f => (a -> f b) -> Hyper fs a -> f (Hyper fs b)
+    traverse f (Scalar a) = Scalar <$> f a
+    traverse f (Prism p)  = Prism  <$> traverse (traverse f) p
+
 {-
 instance Naperian (Hyper fs)
 
