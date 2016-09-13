@@ -52,7 +52,8 @@ data Hyper :: [* -> *] -> * -> * where
     Prism  :: (Dim f, Shapely fs) => 
                 Hyper fs (f a) -> Hyper (f ': fs) a
 
--- TODO: instances of Functor, Applicative, Naperian, Foldable, and Traversable...
+-- instances of Functor, Applicative, Naperian, Foldable, and Traversable below
+
 instance Functor (Hyper fs) where
     fmap f (Scalar a) = Scalar $ f a
     fmap f (Prism p)  = Prism $ fmap (fmap f) p
@@ -78,17 +79,13 @@ instance Traversable (Hyper fs) where
     traverse f (Scalar a) = Scalar <$> f a
     traverse f (Prism p)  = Prism  <$> traverse (traverse f) p
 
+-- TODO: instance of Naperian
 {-
 instance Naperian (Hyper fs)
+-}
 
-instance Foldable (Hyper fs)
-
-instance Traversable (Hyper fs)
-
--- TODO: uncomment when all instances are here
 unary :: Shapely fs => (a -> b) -> (Hyper fs a -> Hyper fs b)
 unary = fmap
--}
 
 -------------------------------------
 --            Aligning shapes
@@ -105,12 +102,14 @@ instance (Dim f, Align fs gs) => Align (f ': fs) (f ': gs) where
 instance (Dim f, Shapely fs) => Align '[] (f ': fs) where
     align = undefined -- TODO: add definition
 
-type family Max(fs::[* -> *]) (gs::[* -> *])::[* -> *]
+type family Max (fs :: [* -> *]) (gs :: [* -> *]) :: [* -> *] where
+    Max (f ': fs) (f ': gs) = f ': Max fs gs
+    Max fs gs = '[]
 
 -- TODO: make `binary` compile
---binary::(Max fs gs ~ hs, Align fs hs, Align gs hs) =>
---    (a -> b -> c) -> (Hyper fs a -> Hyper gs b -> Hyper hs c)
---binary f x y = liftA2 f (align x) (align y)
+binary::(Max fs gs ~ hs, Align fs hs, Align gs hs) =>
+    (a -> b -> c) -> (Hyper fs a -> Hyper gs b -> Hyper hs c)
+binary f x y = liftA2 f (align x) (align y)
 
 -------------------------------------
 --            Flatten a shape
